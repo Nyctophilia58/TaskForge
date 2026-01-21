@@ -7,6 +7,7 @@ import '../../../shared/models/task.dart';
 import '../../../shared/utils/task_actions.dart';
 import 'create_task_screen.dart';
 import 'edit_task_screen.dart';
+import 'package:flutter_slidable/flutter_slidable.dart';
 
 class ProjectDetailScreen extends ConsumerWidget {
   final Project project;
@@ -142,75 +143,93 @@ class ProjectDetailScreen extends ConsumerWidget {
                       final task = tasks[index];
                       final statusColor = _getStatusColor(task.status);
 
-                      return Card(
-                        elevation: 6,
-                        margin: const EdgeInsets.symmetric(vertical: 8),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                        child: ListTile(
-                          contentPadding: const EdgeInsets.all(16),
-                          title: Text(
-                            task.title,
-                            style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                          ),
-                          subtitle: Padding(
-                            padding: const EdgeInsets.only(top: 8),
-                            child: Text(task.description),
-                          ),
-                          trailing: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Chip(
-                                label: Text(
-                                  task.status.toUpperCase(),
-                                  style: const TextStyle(color: Colors.white, fontSize: 12),
-                                ),
-                                backgroundColor: statusColor,
-                                padding: const EdgeInsets.symmetric(horizontal: 8),
-                              ),
-
-                              if (task.status == 'todo')
-                                PopupMenuButton<String>(
-                                  icon: const Icon(Icons.more_vert),
-                                  onSelected: (value) async {
-                                    if (value == 'edit') {
-                                      Navigator.push(
-                                        context,
-                                        MaterialPageRoute(builder: (_) => EditTaskScreen(task: task)),
-                                      ).then((_) => ref.refresh(projectTasksProvider(task.projectId)));
-                                    } else if (value == 'delete') {
-                                      final confirm = await showDialog<bool>(
-                                        context: context,
-                                        builder: (context) => AlertDialog(
-                                          title: const Text('Delete Task'),
-                                          content: Text('Delete "${task.title}"?'),
-                                          actions: [
-                                            TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('Cancel')),
-                                            TextButton(
-                                              onPressed: () => Navigator.pop(context, true),
-                                              child: const Text('Delete', style: TextStyle(color: Colors.red)),
-                                            ),
-                                          ],
-                                        ),
-                                      );
-                                      if (confirm == true) {
-                                        await ref.read(buyerServiceProvider).deleteTask(task.id);
-                                        ref.refresh(projectTasksProvider(task.projectId));
-                                        ScaffoldMessenger.of(context).showSnackBar(
-                                          const SnackBar(content: Text('Task deleted')),
-                                        );
-                                      }
-                                    }
-                                  },
-                                  itemBuilder: (context) => [
-                                    const PopupMenuItem(value: 'edit', child: Text('Edit')),
-                                    const PopupMenuItem(value: 'delete', child: Text('Delete')),
+                      return Slidable(
+                        // Only enable actions for 'todo' tasks
+                        enabled: task.status == 'todo',
+                        endActionPane: ActionPane(
+                          motion: const StretchMotion(),
+                          children: [
+                            SlidableAction(
+                              onPressed: (context) async {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(builder: (_) => EditTaskScreen(task: task)),
+                                ).then((_) => ref.refresh(projectTasksProvider(task.projectId)));
+                              },
+                              backgroundColor: Colors.blue,
+                              foregroundColor: Colors.white,
+                              icon: Icons.edit,
+                              label: 'Edit',
+                              borderRadius: BorderRadius.circular(16),
+                            ),
+                            SlidableAction(
+                              onPressed: (context) async {
+                                final confirm = await showDialog<bool>(
+                                  context: context,
+                                  builder: (context) => AlertDialog(
+                                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                                    title: const Text('Delete Task'),
+                                    content: Text('Delete "${task.title}"? This cannot be undone.'),
+                                    actions: [
+                                      TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('Cancel')),
+                                      TextButton(
+                                        onPressed: () => Navigator.pop(context, true),
+                                        child: const Text('Delete', style: TextStyle(color: Colors.red)),
+                                      ),
+                                    ],
+                                  ),
+                                );
+                                if (confirm == true) {
+                                  await ref.read(buyerServiceProvider).deleteTask(task.id);
+                                  ref.refresh(projectTasksProvider(task.projectId));
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    const SnackBar(content: Text('Task deleted')),
+                                  );
+                                }
+                              },
+                              backgroundColor: Colors.red,
+                              foregroundColor: Colors.white,
+                              icon: Icons.delete,
+                              label: 'Delete',
+                              borderRadius: BorderRadius.circular(16),
+                            ),
+                          ],
+                        ),
+                        child: Card(
+                          elevation: 6,
+                          margin: const EdgeInsets.symmetric(vertical: 8),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                          child: ListTile(
+                            contentPadding: const EdgeInsets.all(16),
+                            title: Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Row(
+                                  mainAxisAlignment: MainAxisAlignment.start,
+                                  children: [
+                                    Icon(
+                                      Icons.task_rounded,
+                                      size: 25,
+                                      color: theme.primaryColor,
+                                    ),
+                                    const SizedBox(width: 5),
+                                    Text(task.title, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
                                   ],
                                 ),
-                            ],
-                          ),
-                          onTap: () => Navigator.push(
-                            context,
-                            MaterialPageRoute(builder: (_) => TaskDetailScreen(task: task)),
+                                Chip(
+                                  label: Text(task.status.toUpperCase(), style: const TextStyle(color: Colors.white, fontSize: 12)),
+                                  backgroundColor: statusColor,
+                                ),
+                              ],
+                            ),
+                            subtitle: Padding(
+                              padding: const EdgeInsets.only(top: 8),
+                              child: Text(task.description),
+                            ),
+                            onTap: () => Navigator.push(
+                              context,
+                              MaterialPageRoute(builder: (_) => TaskDetailScreen(task: task)),
+                            ),
                           ),
                         ),
                       );
