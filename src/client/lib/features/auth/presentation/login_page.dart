@@ -56,6 +56,8 @@ class _LoginPageState extends State<LoginPage> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
     return Form(
       key: _formKey,
       child: Column(
@@ -78,11 +80,14 @@ class _LoginPageState extends State<LoginPage> {
           TextFormField(
             controller: _emailController,
             keyboardType: TextInputType.emailAddress,
-            decoration: const InputDecoration(
+            decoration: InputDecoration(
               labelText: 'Email',
-              prefixIcon: Icon(Icons.email),
-              border: OutlineInputBorder(),
-            ),
+              prefixIcon: const Icon(Icons.email),
+              border: OutlineInputBorder(borderRadius: BorderRadius.circular(16)),
+              focusedBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(16),
+                borderSide: BorderSide(color: theme.primaryColor, width: 2),
+              ),            ),
             validator: (value) {
               if (value == null || value.isEmpty) return 'Enter email';
               if (!value.contains('@')) return 'Invalid email';
@@ -95,11 +100,14 @@ class _LoginPageState extends State<LoginPage> {
           TextFormField(
             controller: _passwordController,
             obscureText: true,
-            decoration: const InputDecoration(
+            decoration: InputDecoration(
               labelText: 'Password',
-              prefixIcon: Icon(Icons.lock),
-              border: OutlineInputBorder(),
-            ),
+              prefixIcon: const Icon(Icons.lock),
+              border: OutlineInputBorder(borderRadius: BorderRadius.circular(16)),
+              focusedBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(16),
+                borderSide: BorderSide(color: theme.primaryColor, width: 2),
+              ),            ),
             validator: (value) {
               if (value == null || value.isEmpty) return 'Enter password';
               if (value.length < 6) return 'Password too short';
