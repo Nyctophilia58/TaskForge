@@ -17,7 +17,7 @@ class _RegisterPageState extends State<RegisterPage> {
   final _confirmController = TextEditingController();
   final _authService = AuthService();
 
-  String _selectedRole = 'buyer'; // default
+  String? _selectedRole = null; // default
   bool _isLoading = false;
 
   Future<void> _register() async {
@@ -29,7 +29,7 @@ class _RegisterPageState extends State<RegisterPage> {
       final user = await _authService.register(
         email: _emailController.text.trim(),
         password: _passwordController.text,
-        role: _selectedRole,
+        role: _selectedRole!,
       );
 
       if (!mounted) return;
@@ -140,7 +140,8 @@ class _RegisterPageState extends State<RegisterPage> {
               DropdownMenuItem(value: 'buyer', child: Text('Buyer (Post tasks)')),
               DropdownMenuItem(value: 'developer', child: Text('Developer (Complete tasks)')),
             ],
-            onChanged: (value) => setState(() => _selectedRole = value!),
+            onChanged: (value) => setState(() => _selectedRole = value),
+            validator: (value) => value == null ? 'Please select a role' : null,
             dropdownStyleData: DropdownStyleData(
               maxHeight: 300,
               decoration: BoxDecoration(
