@@ -137,7 +137,7 @@ class TaskDetailScreen extends ConsumerWidget {
                         _buildDetailItem('Hours Spent', task.hoursSpent!.toStringAsFixed(1), Icons.timer, theme),
                         const Divider(height: 30),
                         _buildDetailItem(
-                          'Amount Due',
+                          task.status == 'paid' ? 'Amount Paid' : 'Amount Due',
                           '\$${task.amountDue.toStringAsFixed(2)}',
                           Icons.payment,
                           theme,
