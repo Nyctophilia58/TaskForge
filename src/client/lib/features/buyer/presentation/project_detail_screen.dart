@@ -228,7 +228,7 @@ class ProjectDetailScreen extends ConsumerWidget {
                             ),
                             onTap: () => Navigator.push(
                               context,
-                              MaterialPageRoute(builder: (_) => TaskDetailScreen(task: task)),
+                              MaterialPageRoute(builder: (_) => TaskDetailScreen(taskId: task.id, projectId: project.id,)),
                             ),
                           ),
                         ),
