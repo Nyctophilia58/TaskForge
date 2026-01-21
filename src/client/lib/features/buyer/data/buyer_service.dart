@@ -41,16 +41,28 @@ class BuyerService {
         .toList();
   }
 
-  Future<List<Task>> getTasksForProject(int projectId) async {
-    // Use the buyer task list endpoint — it returns all tasks for the buyer's projects
-    final response = await _dio.get('/tasks/'); // ← NO query param
-    final List<dynamic> data = response.data;
+  // Future<List<Task>> getTasksForProject(int projectId) async {
+  //   // Use the buyer task list endpoint — it returns all tasks for the buyer's projects
+  //   final response = await _dio.get('/tasks?project_id=$projectId'); // ← NO query param
+  //   final List<dynamic> data = response.data;
+  //
+  //   // Filter on frontend by projectId
+  //   return data
+  //       .map((json) => Task.fromJson(json as Map<String, dynamic>))
+  //       .where((task) => task.projectId == projectId)
+  //       .toList();
+  // }
 
-    // Filter on frontend by projectId
-    return data
-        .map((json) => Task.fromJson(json as Map<String, dynamic>))
-        .where((task) => task.projectId == projectId)
-        .toList();
+  Future<List<Task>> getTasksForProject(int projectId) async {
+    final response = await _dio.get('/tasks?project_id=$projectId');
+
+    final data = response.data;
+
+    if (data is List) {
+      return (data).map((json) => Task.fromJson(json)).where((task) => task.projectId == projectId).toList();
+    } else {
+      throw Exception('Unexpected response format');
+    }
   }
 
   Future<void> deleteProject(int projectId) async {
