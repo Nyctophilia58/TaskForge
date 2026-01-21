@@ -3,7 +3,7 @@ from sqlalchemy.orm import Session
 from app.deps import get_db
 from app.schemas import ProjectCreate
 from app import crud
-from app.models import Project
+from app.models import Project, Task, Payment
 from app.auth import require_role
 
 router = APIRouter(prefix="/projects", tags=["projects"])
@@ -52,6 +52,17 @@ def delete_project(
     if not project:
         raise HTTPException(status_code=404, detail="Project not found or not owned by you")
 
+    # 1. Get all task IDs in this project
+    task_ids = [task.id for task in db.query(Task.id).filter(Task.project_id == project_id).all()]
+
+    # 2. Delete all payments linked to these tasks (safe, no join)
+    if task_ids:
+        db.query(Payment).filter(Payment.task_id.in_(task_ids)).delete(synchronize_session=False)
+
+    # 3. Delete all tasks in this project
+    db.query(Task).filter(Task.project_id == project_id).delete(synchronize_session=False)
+
+    # 4. Finally delete the project
     db.delete(project)
     db.commit()
     return None
