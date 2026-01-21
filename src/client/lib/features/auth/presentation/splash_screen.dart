@@ -18,7 +18,7 @@ class SplashScreen extends ConsumerWidget {
       future: ApiClient().getToken(),
       builder: (context, tokenSnapshot) {
         if (tokenSnapshot.connectionState == ConnectionState.waiting) {
-          return _buildSplash();
+          return _buildSplash(context);
         }
 
         if (tokenSnapshot.hasData && tokenSnapshot.data != null) {
@@ -29,7 +29,7 @@ class SplashScreen extends ConsumerWidget {
             ]).then((results) => results[0] as User),
             builder: (context, userSnapshot) {
               if (userSnapshot.connectionState == ConnectionState.waiting) {
-                return _buildSplash();
+                return _buildSplash(context);
               }
 
               if (userSnapshot.hasData) {
@@ -43,7 +43,7 @@ class SplashScreen extends ConsumerWidget {
                 });
               }
 
-              return _buildSplash();
+              return _buildSplash(context);
             },
           );
         }
@@ -55,33 +55,49 @@ class SplashScreen extends ConsumerWidget {
             WidgetsBinding.instance.addPostFrameCallback((_) {
               Navigator.pushReplacementNamed(context, '/login');
             });
-            return _buildSplash();
+            return _buildSplash(context);
           },
         );
       },
     );
   }
 
-  Widget _buildSplash() {
+  Widget _buildSplash(BuildContext context) {
+    final theme = Theme.of(context);
+
     return Scaffold(
+      extendBodyBehindAppBar: true,
       backgroundColor: Colors.blueGrey.shade300,
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Lottie.asset(
-              'assets/animations/loading_animation.json',
-              width: 200,
-              height: 200,
-              fit: BoxFit.contain,
-              repeat: true,
-            ),
-            const SizedBox(height: 40),
-            const Text(
-              'TaskForge',
-              style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold, color: Colors.blue),
-            ),
-          ],
+      body: Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [
+              theme.primaryColor.withOpacity(0.8),
+              theme. splashColor,
+              theme.scaffoldBackgroundColor,
+            ],
+          ),
+        ),
+        child: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Lottie.asset(
+                'assets/animations/loading_animation.json',
+                width: 300,
+                height: 300,
+                fit: BoxFit.contain,
+                repeat: true,
+              ),
+              const SizedBox(height: 40),
+              Text(
+                'TaskForge',
+                style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold, color: theme.primaryColor),
+              ),
+            ],
+          ),
         ),
       ),
     );
